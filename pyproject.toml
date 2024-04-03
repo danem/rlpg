@@ -1,0 +1,34 @@
+[build-system]
+requires = ["setuptools >= 61.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = [
+    "rlpg"
+]
+
+[project]
+name = "rl-pg"
+readme = "README.md"
+license = {file = "LICENSE"}
+authors = [
+    {name = "Dane Mason", email = "danem.mason@gmail.com"}
+]
+requires-python = ">= 3.8"
+dynamic = ["version"]
+dependencies = [
+    "box2d",
+    "einops",
+    "gymnasium[atari, box2d]",
+    "ipywidgets",
+    "lightning",
+    "matplotlib",
+    "numpy",
+    "pandas",
+    "pillow",
+    "tensorboard",
+    "torch",
+    "torchvision",
+    "tqdm",
+    "wandb"
+]
