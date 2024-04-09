@@ -19,7 +19,7 @@ class Conv2DBlock (nn.Module):
         last_sizes, last_channel = utils.conv_size2d(img_w, img_h, 3, 1, 1), n_channels
 
         for c, k, s, p in layers:
-            conv = nn.Conv2d(last_channel, c, kernel_size=k, stride=s, padding=p)
+            conv = nn.Conv2d(last_channel, c, kernel_size=k, stride=s, padding=p, bias=False)
             last_sizes = utils.conv_size2d(last_sizes[0], last_sizes[1], k, s, p)
             last_channel = c
             self.convs.append(conv)

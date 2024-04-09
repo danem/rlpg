@@ -1,6 +1,7 @@
-import torch
 import numpy as np
 import pathlib
+import scipy
+import torch
 import torch.utils.data as tud
 from datetime import datetime
 import rlpg.envs.types as rl_envs
@@ -88,8 +89,21 @@ def conv_size2d (w, h, k, s, padding = 0, dilation=1):
     return wsz, hsz
 
 
-def split_dataset (ds, train_pct):
-    total_len = len(ds)
-    train_len = int(train_pct * total_len)
-    val_len = total_len - train_len
-    return tud.random_split(ds, [train_len, val_len])
+
+# Taken from OpenAI spinning up
+def discount_cumsum(x, discount):
+    """
+    magic from rllab for computing discounted cumulative sums of vectors.
+
+    input: 
+        vector x, 
+        [x0, 
+         x1, 
+         x2]
+
+    output:
+        [x0 + discount * x1 + discount^2 * x2,  
+         x1 + discount * x2,
+         x2]
+    """
+    return scipy.signal.lfilter([1], [1, float(-discount)], x[::-1], axis=0)[::-1]

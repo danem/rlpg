@@ -14,7 +14,7 @@ import gymnasium as gym
 import random
 from typing import Dict, List, Sequence
 import json
-import numpy as np
+
 
 class QMemory (rl_memory.CircularBuffer):
     def __init__ (self, size, observation_shape: Sequence[int], action_shape: Sequence[int] = None, action_dtype: type = torch.float32):
@@ -50,6 +50,19 @@ class QMemory (rl_memory.CircularBuffer):
         self._device = dev
         return self
 
+@dataclasses.dataclass
+class QHParams:
+    batch_size: int =  128
+    bellman_gamma: float = 0.99
+    bellman_tau: float = 0.005
+    target_update_freq: int = 3
+    grad_clip_value: float = 100
+    search_start: float = 0.9
+    search_stop: float = 0.1
+    search_decay: int = 1000
+    memory_size: int = 10_000
+    lr: float = 1e-4
+
 @dataclasses.dataclass(kw_only=True)
 class QTrainState(rl_trainers.TrainState):
     env: gym.Env
@@ -60,28 +73,12 @@ class QTrainState(rl_trainers.TrainState):
     optim: torch.optim.Optimizer
 
     memory: QMemory
-    hparams: rl_utils.DotDict
+    hparams: QHParams
 
     search_scheduler: rl_utils.EpsilonScheduler
     search_steps: int = 0
 
     device: str
-
-def get_hparams (**kwargs) -> rl_utils.DotDict:
-    params = {
-        "batch_size": 128,
-        "bellman_gamma": 0.99,
-        "bellman_tau": 0.005,
-        "target_update_freq": 3,
-        "grad_clip_value": 100,
-        "search_start": 0.9,
-        "search_stop": 0.1,
-        "search_decay": 1000,
-        "memory_size": 10_000,
-        "lr": 1e-4
-    }
-    params = rl_utils.merge_dicts(params, kwargs)
-    return rl_utils.DotDict(params)
 
 
 def make_train_state (
@@ -93,17 +90,12 @@ def make_train_state (
     log_frequency: int = 5,
     write_frequency: int = 1000, 
     device: str = None,
-    hparams: Dict = None
+    hparams: QHParams = None
 ):
-    # TODO: Rework how hyperparameters work
-    hparams["device"] = device if device else hparams.get("device", "cpu")
-    hparams = get_hparams(**hparams)
-
     logger = None
     writer = None
     if log_dir:
         logger, writer = rl_loggers.make_tensorboard_logger(log_dir)
-        logger.config(hparams)
 
     policy.to(device)
     target.to(device)

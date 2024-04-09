@@ -48,37 +48,5 @@ class CircularBuffer:
     def __len__ (self):
         return self._len
 
-class ReplayMemory (CircularBuffer):
-    def __init__ (self, size, observation_shape: Sequence[int], action_shape: Sequence[int] = None, action_dtype: type = torch.float32):
-        super().__init__(size)
-
-        action_shape = list(action_shape) if action_shape else [1]
-        observation_shape = list(observation_shape)
-
-        self.states = torch.zeros([size] + observation_shape)
-        self.next_states = torch.zeros([size] + observation_shape)
-        self.non_final_mask = torch.zeros(size).bool()
-        self.actions = torch.zeros([size] + action_shape, dtype=action_dtype)
-        self.rewards = torch.zeros([size, 1]).float()
-    
-    def push (self, state, action, next_state, reward):
-        idx = self.get_push_idx()
-
-        self.states[idx] = state
-        self.actions[idx] = action
-        self.rewards[idx] = reward
-        if next_state is not None:
-            self.next_states[idx] = next_state
-
-        self.non_final_mask[idx] = next_state is not None
-        
-    def to (self, dev):
-        self.states = self.states.to(dev)
-        self.next_states = self.next_states.to(dev)
-        self.non_final_mask = self.non_final_mask.to(dev)
-        self.actions = self.actions.to(dev)
-        self.rewards = self.rewards.to(dev)
-        self._device = dev
-        return self
         
 

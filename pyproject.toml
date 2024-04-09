@@ -26,8 +26,10 @@ dependencies = [
     "numpy",
     "pandas",
     "pillow",
+    "scipy",
     "tensorboard",
     "torch",
+    "torchtnt",
     "torchvision",
     "tqdm",
     "wandb"

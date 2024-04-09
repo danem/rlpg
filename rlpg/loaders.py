@@ -1,3 +1,4 @@
+import torch.utils.data as tud
 from torch.utils.data import Dataset, DataLoader
 from torchvision import transforms
 import os
@@ -29,3 +30,9 @@ def image_dataloader (path, img_transforms = None):
     dataset = ImageDataset(path, transform)
     dataloader = DataLoader(dataset, batch_size=32, shuffle=True, num_workers=6)
     return dataloader
+
+def split_dataset (ds, train_pct):
+    total_len = len(ds)
+    train_len = int(train_pct * total_len)
+    val_len = total_len - train_len
+    return tud.random_split(ds, [train_len, val_len])

@@ -7,6 +7,7 @@ import torch
 import functools
 import gymnasium as gym
 import einops
+import dataclasses
 
 import rlpg.utils as rl_utils
 import rlpg.rl_memory as rl_memory
@@ -333,57 +334,35 @@ class SnakeEvaluator (rl_envs.RewardEvaluator):
 
 gym.register("Snake-Basic", SnakeEnv)
 
-def get_hparams (**kwargs):
-    hparams = {
-        "board_width": 10,
-        "board_height": 10,
-        "init_max_snake_len": 5,
-        "init_max_food_count": 10,
-        "init_greedy": True,
-        "max_history_discount_steps": 5,
-        "reward_multiplier": 10,
-        "discount_multiplier": 0.25,
-        "food_schedule_decay": 0.5
-    }
-    hparams = rl_utils.merge_dicts(kwargs, hparams)
-    return rl_utils.DotDict(hparams)
-
+@dataclasses.dataclass
+class SnakeHParams:
+    board_width: int = 10
+    board_height: int = 10
+    init_max_snake_len: int = 5
+    init_max_food_count: int = 10
+    init_greedy: bool = True
+    max_history_discount_steps: int = 5,
+    reward_multiplier: float = 10
+    discount_multiplier: float = 0.25
+    food_schedule_decay: float = 0.5
+    device: str = "cpu"
 
 def basic_snake (
-    board_size: Tuple[int, int],
-    device: str,
-    **kwargs
+    hparams: SnakeHParams
 ):
-    hparams = get_hparams(
-        board_width=board_size[0], 
-        board_height = board_size[1], 
-        device = device,
-        **kwargs
-    )
-    env = gym.make("Snake-Basic", board_size=board_size, **hparams)
-    evaluator = SnakeEvaluator(env, **hparams).to(device)
-    return env, evaluator, hparams
+    env = gym.make("Snake-Basic", board_size=(hparams.board_width, hparams.board_height))
+    evaluator = SnakeEvaluator(env).to(hparams.device)
+    return env, evaluator
 
 def snake_image (
-    board_size: Tuple[int, int],
-    image_size: Tuple[int, int],
-    device: str,
-    color: bool = True,
-    **kwargs
+    image_size,
+    color,
+    hparams: SnakeHParams
 ):
-    hparams = get_hparams(
-        board_width=board_size[0],
-        board_height=board_size[1],
-        image_width = image_size[0],
-        image_height = image_size[1],
-        color=color, 
-        device = device,
-        **kwargs
-    )
     ropts = rl_envs.RenderOptions(image_size, color=color)
-    env = gym.make("Snake-Basic", board_size = board_size, render_opts = ropts, **hparams)
-    evaluator = SnakeEvaluator(env, **hparams).to(device)
-    return env, evaluator, hparams
+    env = gym.make("Snake-Basic", board_size = (hparams.board_width, hparams.board_height), render_opts = ropts)
+    evaluator = SnakeEvaluator(env).to(help.device)
+    return env, evaluator
 
 
 
